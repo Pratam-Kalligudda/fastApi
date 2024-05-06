@@ -2,7 +2,8 @@ from fastapi import FastAPI, UploadFile, File
 import io, librosa
 import numpy as np
 import tensorflow as tf
-
+import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 def preprocess_audio_mfcc(audio_file, target_length=50000, noise_level=0.001):
     audio, sr = librosa.load(audio_file, sr=16000)
