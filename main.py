@@ -39,19 +39,16 @@
 
 
 from fastapi import FastAPI, File, UploadFile
-from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 import azure.cognitiveservices.speech as speechsdk
-import torch
 import io
 import threading
-import librosa
 import os
-from dotenv import load_dotenv, dotenv_values 
+from dotenv import load_dotenv
+import speech_recognition as sr
+
+
 app = FastAPI()
 
-# Load the Wav2Vec2 model and tokenizer
-tokenizer = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-large-xlsr-53-french")
-model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-large-xlsr-53-french")
 
 load_dotenv() 
 # Azure Speech Service configurations
@@ -121,15 +118,21 @@ def pronunciation_assessment_from_stream(audio_stream: io.BytesIO, reference_tex
 async def create_upload_file(file: UploadFile = File(...)):
     audio_stream = io.BytesIO(await file.read())
     
-    # Transcription using Wav2Vec2
-    audio, sr = librosa.load(audio_stream, sr=16000)
-    input_values = tokenizer(audio, return_tensors="pt", padding="longest").input_values
+    r = sr.Recognizer()
+    # Reading Audio file as source
+    #  listening  the  аudiо  file  аnd  stоre  in  аudiо_text  vаriаble
+    with sr.AudioFile(audio_stream) as source:
 
-    with torch.no_grad():
-        logits = model(input_values).logits
-        predicted_ids = torch.argmax(logits, dim=-1)
-        transcription = tokenizer.batch_decode(predicted_ids)[0]
+        audio_text = r.listen(source)
+    # recoginize_() method will throw a request error if the API is unreachable, hence using exception handling
+        try:
+            # using google speech recognition
+            text = r.recognize_google(audio_text,language='fr-FR')
+            print('Converting audio transcripts into text ...')
+            print(text)
+        except:
+            print('Sorry.. run again...')
 
     # Perform pronunciation assessment using the transcription as reference text
-    result = pronunciation_assessment_from_stream(io.BytesIO(audio_stream.getvalue()), transcription)
+    result = pronunciation_assessment_from_stream(io.BytesIO(audio_stream.getvalue()), text)
     return {"result": result}
