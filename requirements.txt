@@ -1,3 +1,8 @@
 fastapi
 librosa
 tensorflow
+transformers
+torch
+azure-cognitiveservices-speech
+python-dotenv
+threading

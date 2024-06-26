@@ -39,7 +39,7 @@
 
 
 from fastapi import FastAPI, File, UploadFile
-from transformers import Wav2Vec2Tokenizer, Wav2Vec2ForCTC
+from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 import azure.cognitiveservices.speech as speechsdk
 import torch
 import io
@@ -50,7 +50,7 @@ from dotenv import load_dotenv, dotenv_values
 app = FastAPI()
 
 # Load the Wav2Vec2 model and tokenizer
-tokenizer = Wav2Vec2Tokenizer.from_pretrained("facebook/wav2vec2-large-xlsr-53-french")
+tokenizer = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-large-xlsr-53-french")
 model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-large-xlsr-53-french")
 
 load_dotenv() 
